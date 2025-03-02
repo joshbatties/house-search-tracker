@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePropertyStore } from '@/store/propertyStore';
@@ -12,11 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 
-interface PropertyFormProps {
+// Update the PropertyFormProps interface to include onSubmit
+export interface PropertyFormProps {
   editProperty?: Property;
+  onSubmit: (data: Omit<Property, "id" | "createdAt" | "updatedAt" | "dateAdded">) => void;
 }
 
-const PropertyForm = ({ editProperty }: PropertyFormProps) => {
+const PropertyForm = ({ editProperty, onSubmit }: PropertyFormProps) => {
   const navigate = useNavigate();
   const { addProperty, updateProperty } = usePropertyStore();
 
@@ -101,15 +102,8 @@ const PropertyForm = ({ editProperty }: PropertyFormProps) => {
         return;
       }
       
-      if (editProperty) {
-        updateProperty(editProperty.id, formData as Partial<Property>);
-        toast.success('Property updated successfully!');
-      } else {
-        addProperty(formData as Omit<Property, 'id' | 'dateAdded'>);
-        toast.success('Property added successfully!');
-      }
-      
-      navigate('/properties');
+      // Call the onSubmit handler passed as a prop
+      onSubmit(formData as Omit<Property, "id" | "createdAt" | "updatedAt" | "dateAdded">);
     } catch (error) {
       toast.error('An error occurred while saving the property.');
       console.error(error);

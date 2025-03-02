@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { usePropertyStore } from '@/store/propertyStore';
 import { useLocation, Link } from 'react-router-dom';
@@ -11,17 +10,21 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MapViewProps {
+  properties?: Property[];
   highlightedPropertyId?: string;
 }
 
-const MapView = ({ highlightedPropertyId }: MapViewProps) => {
+const MapView = ({ properties, highlightedPropertyId }: MapViewProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   
-  const { filteredProperties } = usePropertyStore();
+  const { filteredProperties: storeFilteredProperties } = usePropertyStore();
+  
+  // Use properties from props if provided, otherwise use filteredProperties from store
+  const filteredProperties = properties || storeFilteredProperties;
   
   // Load the Google Maps API script
   useEffect(() => {

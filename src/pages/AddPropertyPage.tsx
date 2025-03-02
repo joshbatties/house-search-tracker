@@ -12,12 +12,13 @@ const AddPropertyPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = (data: Omit<Property, "id" | "createdAt" | "updatedAt">) => {
+  const handleSubmit = (data: Omit<Property, "id" | "createdAt" | "updatedAt" | "dateAdded">) => {
     const newProperty = {
       ...data,
       id: uuidv4(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      dateAdded: new Date().toISOString(),
     };
 
     addProperty(newProperty);
