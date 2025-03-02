@@ -1,6 +1,6 @@
 
 import Layout from "@/components/Layout/Layout";
-import { PropertyList } from "@/components/Properties/PropertyList";
+import PropertyList from "@/components/Properties/PropertyList";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";

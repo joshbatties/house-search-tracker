@@ -1,7 +1,7 @@
 
 import Layout from "@/components/Layout/Layout";
-import { PropertyDetail } from "@/components/Properties/PropertyDetail";
-import { useParams, useNavigate } from "react-router-dom";
+import PropertyDetail from "@/components/Properties/PropertyDetail";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { usePropertyStore } from "@/store/propertyStore";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -23,8 +23,9 @@ const PropertyDetailPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const { getPropertyById, deleteProperty } = usePropertyStore();
-  const property = getPropertyById(id || "");
+  const { properties, deleteProperty } = usePropertyStore();
+  // Get property by id
+  const property = properties.find(p => p.id === id);
 
   const handleDelete = () => {
     if (id) {

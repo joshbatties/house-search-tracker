@@ -1,6 +1,6 @@
 
 import Layout from "@/components/Layout/Layout";
-import { PropertyForm } from "@/components/Properties/PropertyForm";
+import PropertyForm from "@/components/Properties/PropertyForm";
 import { usePropertyStore } from "@/store/propertyStore";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";

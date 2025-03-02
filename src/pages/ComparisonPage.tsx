@@ -117,7 +117,7 @@ const ComparisonPage = () => {
                     {property && (
                       <CardContent className="text-sm">
                         <p className="font-medium text-lg">${property.price}/mo</p>
-                        <p className="text-muted-foreground mb-2">{property.location}</p>
+                        <p className="text-muted-foreground mb-2">{`${property.address}, ${property.city}`}</p>
                         
                         <div className="space-y-4">
                           <div className="grid grid-cols-2 gap-2">
@@ -201,14 +201,18 @@ const ComparisonPage = () => {
                         <tr className="border-b">
                           <td className="py-3 font-medium">Location</td>
                           {comparisonData.map((property) => (
-                            <td key={property.id} className="py-3">{property.location}</td>
+                            <td key={property.id} className="py-3">{`${property.city}, ${property.state}`}</td>
                           ))}
                         </tr>
                         <tr className="border-b">
                           <td className="py-3 font-medium">Pet Friendly</td>
                           {comparisonData.map((property) => (
                             <td key={property.id} className="py-3">
-                              {property.petFriendly ? <Check className="text-green-500 h-5 w-5" /> : <X className="text-red-500 h-5 w-5" />}
+                              {property.amenities?.some(amenity => 
+                                amenity.toLowerCase().includes('pet')) ? 
+                                <Check className="text-green-500 h-5 w-5" /> : 
+                                <X className="text-red-500 h-5 w-5" />
+                              }
                             </td>
                           ))}
                         </tr>

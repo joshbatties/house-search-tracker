@@ -1,6 +1,6 @@
 
 import Layout from "@/components/Layout/Layout";
-import { MapView } from "@/components/Map/MapView";
+import MapView from "@/components/Map/MapView";
 import { usePropertyStore } from "@/store/propertyStore";
 
 const MapViewPage = () => {

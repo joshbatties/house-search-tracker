@@ -5,8 +5,8 @@ import Layout from "@/components/Layout/Layout";
 import { Link } from "react-router-dom";
 import { usePropertyStore } from "@/store/propertyStore";
 import { Home, MapPin, Plus, BarChart2, Search } from "lucide-react";
-import { Summary } from "@/components/Dashboard/Summary";
-import { PriceChart } from "@/components/Charts/PriceChart";
+import Summary from "@/components/Dashboard/Summary";
+import PriceChart from "@/components/Charts/PriceChart";
 
 const Index = () => {
   const properties = usePropertyStore((state) => state.properties);
@@ -112,9 +112,9 @@ const Index = () => {
                 <Link key={property.id} to={`/properties/${property.id}`}>
                   <Card className="hover:shadow-md transition-all overflow-hidden h-full">
                     <div className="aspect-video bg-muted relative">
-                      {property.image ? (
+                      {property.imageUrl ? (
                         <img
-                          src={property.image}
+                          src={property.imageUrl}
                           alt={property.title}
                           className="w-full h-full object-cover"
                         />
@@ -126,7 +126,7 @@ const Index = () => {
                     </div>
                     <CardContent className="p-4">
                       <h3 className="font-semibold truncate">{property.title}</h3>
-                      <p className="text-sm text-muted-foreground truncate">{property.location}</p>
+                      <p className="text-sm text-muted-foreground truncate">{`${property.address}, ${property.city}`}</p>
                       <div className="flex justify-between items-center mt-2">
                         <p className="font-medium">${property.price}/mo</p>
                         <p className="text-sm text-muted-foreground">
