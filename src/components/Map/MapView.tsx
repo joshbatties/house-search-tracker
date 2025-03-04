@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+
+import { useState } from 'react';
 import { usePropertyStore } from '@/store/propertyStore';
-import { useLocation, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Property } from '@/types/Property';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ChevronLeft, Search, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import LeafletMap from './LeafletMap';
 
 interface MapViewProps {
   properties?: Property[];
@@ -15,51 +17,13 @@ interface MapViewProps {
 }
 
 const MapView = ({ properties, highlightedPropertyId }: MapViewProps) => {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const location = useLocation();
   
   const { filteredProperties: storeFilteredProperties } = usePropertyStore();
   
   // Use properties from props if provided, otherwise use filteredProperties from store
   const filteredProperties = properties || storeFilteredProperties;
-  
-  // Load the Google Maps API script
-  useEffect(() => {
-    // Simulate loading a map
-    const timer = setTimeout(() => {
-      setMapLoaded(true);
-    }, 1000);
-    
-    // Note: In a real implementation, you would load the Google Maps API here
-    // const script = document.createElement('script');
-    // script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap`;
-    // script.async = true;
-    // document.body.appendChild(script);
-    
-    return () => {
-      clearTimeout(timer);
-      // document.body.removeChild(script);
-    };
-  }, []);
-  
-  // Initialize the map when the API is loaded
-  useEffect(() => {
-    if (mapLoaded && mapRef.current) {
-      // In a real implementation, you would initialize the map here
-      console.log('Map initialized');
-      
-      // If there's a highlighted property, select it
-      if (highlightedPropertyId) {
-        const property = filteredProperties.find(p => p.id === highlightedPropertyId);
-        if (property) {
-          setSelectedProperty(property);
-        }
-      }
-    }
-  }, [mapLoaded, highlightedPropertyId, filteredProperties]);
   
   // Filter properties based on search query
   const filteredBySearch = searchQuery.trim() === '' 
@@ -70,10 +34,29 @@ const MapView = ({ properties, highlightedPropertyId }: MapViewProps) => {
         property.city.toLowerCase().includes(searchQuery.toLowerCase())
       );
   
-  // Handle property selection
-  const handlePropertySelect = (property: Property) => {
+  // Handle property marker click
+  const handleMarkerClick = (property: Property) => {
     setSelectedProperty(property);
-    // In a real implementation, you would pan to the property marker
+  };
+  
+  // Calculate map center based on properties
+  const calculateMapCenter = (): [number, number] => {
+    if (highlightedPropertyId) {
+      const highlighted = filteredProperties.find(p => p.id === highlightedPropertyId);
+      if (highlighted) {
+        return [highlighted.latitude, highlighted.longitude];
+      }
+    }
+    
+    if (filteredProperties.length === 0) {
+      return [37.7749, -122.4194]; // Default to San Francisco
+    }
+    
+    // Calculate the average of all property coordinates
+    const sumLat = filteredProperties.reduce((sum, p) => sum + p.latitude, 0);
+    const sumLng = filteredProperties.reduce((sum, p) => sum + p.longitude, 0);
+    
+    return [sumLat / filteredProperties.length, sumLng / filteredProperties.length];
   };
   
   return (
@@ -117,7 +100,7 @@ const MapView = ({ properties, highlightedPropertyId }: MapViewProps) => {
                     "w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-0",
                     selectedProperty?.id === property.id && "bg-blue-50 dark:bg-blue-900/30"
                   )}
-                  onClick={() => handlePropertySelect(property)}
+                  onClick={() => setSelectedProperty(property)}
                 >
                   <div className="flex items-start">
                     <MapPin size={16} className="flex-shrink-0 mt-0.5 mr-2 text-blue-500" />
@@ -135,42 +118,15 @@ const MapView = ({ properties, highlightedPropertyId }: MapViewProps) => {
         </AnimatePresence>
       </div>
       
-      {/* Map placeholder */}
-      <div ref={mapRef} className="w-full h-full rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/20 dark:to-gray-900 flex items-center justify-center relative">
-        {!mapLoaded ? (
-          <div className="text-gray-500 dark:text-gray-400">Loading map...</div>
-        ) : (
-          <div className="absolute inset-0 rounded-xl overflow-hidden">
-            {/* This is a placeholder for the actual map */}
-            {/* In a real implementation, Google Maps would be displayed here */}
-            <div className="w-full h-full bg-gray-200 dark:bg-gray-800 relative">
-              <div className="absolute inset-0 p-8 flex flex-col items-center justify-center">
-                <h3 className="text-xl font-semibold mb-2">Map Placeholder</h3>
-                <p className="text-center text-gray-500 dark:text-gray-400 mb-4">
-                  This is a placeholder for the actual map integration. In a real implementation,
-                  you would see a Google Maps or Mapbox map here with property markers.
-                </p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {filteredProperties.map(property => (
-                    <Button
-                      key={property.id}
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        "bg-white dark:bg-gray-800",
-                        selectedProperty?.id === property.id && "border-blue-500 dark:border-blue-500"
-                      )}
-                      onClick={() => handlePropertySelect(property)}
-                    >
-                      <MapPin size={14} className="mr-1" />
-                      {property.title}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+      {/* Leaflet Map */}
+      <div className="w-full h-full rounded-xl overflow-hidden">
+        <LeafletMap 
+          properties={filteredBySearch}
+          center={calculateMapCenter()}
+          zoom={12}
+          onMarkerClick={handleMarkerClick}
+          highlightedPropertyId={highlightedPropertyId}
+        />
       </div>
       
       <Dialog open={!!selectedProperty} onOpenChange={open => !open && setSelectedProperty(null)}>

@@ -1,3 +1,4 @@
+
 import { Property } from '@/types/Property';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -144,7 +145,10 @@ const PropertyDetail = ({ property }: PropertyDetailProps) => {
               <Card>
                 <CardContent className="p-0 overflow-hidden">
                   <div className="h-[400px]">
-                    <MapView highlightedPropertyId={property.id} />
+                    <MapView 
+                      properties={[property]} 
+                      highlightedPropertyId={property.id} 
+                    />
                   </div>
                 </CardContent>
               </Card>
