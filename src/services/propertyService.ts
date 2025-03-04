@@ -85,10 +85,18 @@ export const propertyService = {
   },
   
   async createProperty(property: PropertyInput): Promise<Property> {
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error("User must be logged in to create a property");
+    }
+    
     // Map our Property type to the database structure
     const { data, error } = await supabase
       .from('properties')
       .insert({
+        user_id: user.id, // Add the user_id from the authenticated user
         title: property.title,
         description: property.description,
         address: property.address,
