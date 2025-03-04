@@ -1,19 +1,25 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Home, Map, BarChart2, Plus, Search } from 'lucide-react';
+import { Menu, X, Home, Map, BarChart2, Plus, Search, LogOut, LogIn } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { session } = useAuth();
+  const { toast } = useToast();
 
   const routes = [
     { name: 'Dashboard', path: '/', icon: Home },
     { name: 'Properties', path: '/properties', icon: Search },
     { name: 'Map View', path: '/map', icon: Map },
     { name: 'Comparison', path: '/comparison', icon: BarChart2 },
-    { name: 'Add Property', path: '/add-property', icon: Plus },
+    ...(session ? [{ name: 'Add Property', path: '/add-property', icon: Plus }] : []),
   ];
 
   const toggleMenu = () => {
@@ -26,6 +32,23 @@ export const Navbar = () => {
 
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Signed out",
+        description: "You have been signed out successfully.",
+      });
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -60,6 +83,34 @@ export const Navbar = () => {
               )}
             </Link>
           ))}
+          
+          {session ? (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleSignOut}
+              className="ml-4 flex items-center text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          ) : (
+            <Link
+              to="/auth"
+              className={cn(
+                "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all relative group ml-4",
+                isActive('/auth')
+                  ? "text-blue-600 dark:text-blue-400"
+                  : "text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
+              )}
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              <span>Sign In</span>
+              {isActive('/auth') && (
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400 rounded-full" />
+              )}
+            </Link>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -101,6 +152,33 @@ export const Navbar = () => {
               {route.name}
             </Link>
           ))}
+          
+          {session ? (
+            <button
+              onClick={() => {
+                handleSignOut();
+                closeMenu();
+              }}
+              className="flex items-center w-full px-3 py-3 rounded-lg text-base font-medium transition-colors text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              <LogOut className="w-5 h-5 mr-3" />
+              Sign Out
+            </button>
+          ) : (
+            <Link
+              to="/auth"
+              className={cn(
+                "flex items-center px-3 py-3 rounded-lg text-base font-medium transition-colors",
+                isActive('/auth')
+                  ? "bg-blue-50 text-blue-600 dark:bg-gray-800 dark:text-blue-400"
+                  : "text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+              )}
+              onClick={closeMenu}
+            >
+              <LogIn className="w-5 h-5 mr-3" />
+              Sign In
+            </Link>
+          )}
         </div>
       </div>
     </nav>
