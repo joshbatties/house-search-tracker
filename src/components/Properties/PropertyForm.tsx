@@ -11,13 +11,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 
-// Update the PropertyFormProps interface to include onSubmit
+// Update the PropertyFormProps interface to include additional props
 export interface PropertyFormProps {
   editProperty?: Property;
   onSubmit: (data: Omit<Property, "id" | "createdAt" | "updatedAt" | "dateAdded">) => void;
+  isSubmitting?: boolean;
+  isDisabled?: boolean;
 }
 
-const PropertyForm = ({ editProperty, onSubmit }: PropertyFormProps) => {
+const PropertyForm = ({ 
+  editProperty, 
+  onSubmit, 
+  isSubmitting = false,
+  isDisabled = false
+}: PropertyFormProps) => {
   const navigate = useNavigate();
   const { addProperty, updateProperty } = usePropertyStore();
 
@@ -408,11 +415,22 @@ const PropertyForm = ({ editProperty, onSubmit }: PropertyFormProps) => {
             type="button" 
             variant="outline" 
             onClick={() => navigate(-1)}
+            disabled={isSubmitting}
           >
             Cancel
           </Button>
-          <Button type="submit">
-            {editProperty ? 'Update Property' : 'Add Property'}
+          <Button 
+            type="submit" 
+            disabled={isSubmitting || isDisabled}
+          >
+            {isSubmitting ? (
+              <>
+                <span className="mr-2">Saving...</span>
+                {/* You could add a spinner here if desired */}
+              </>
+            ) : (
+              editProperty ? 'Update Property' : 'Add Property'
+            )}
           </Button>
         </CardFooter>
       </form>

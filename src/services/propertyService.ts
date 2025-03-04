@@ -6,9 +6,21 @@ export interface PropertyInput extends Omit<Property, "id" | "createdAt" | "upda
 
 export const propertyService = {
   async getProperties(): Promise<Property[]> {
-    const { data, error } = await supabase
-      .from('properties')
-      .select('*');
+    // Get the current user or anonymous ID
+    const { data: { user } } = await supabase.auth.getUser();
+    const anonymousId = localStorage.getItem("anonymousId");
+    
+    let query = supabase.from('properties').select('*');
+    
+    if (user) {
+      // If logged in, get user's properties
+      query = query.eq('user_id', user.id);
+    } else if (anonymousId) {
+      // If anonymous, get properties created with anonymous ID
+      query = query.eq('user_id', anonymousId);
+    }
+    
+    const { data, error } = await query;
     
     if (error) {
       console.error("Error fetching properties:", error);
@@ -85,18 +97,21 @@ export const propertyService = {
   },
   
   async createProperty(property: PropertyInput): Promise<Property> {
-    // Get the current user
+    // Get the current user or use anonymous ID
     const { data: { user } } = await supabase.auth.getUser();
+    const anonymousId = localStorage.getItem("anonymousId");
     
-    if (!user) {
-      throw new Error("User must be logged in to create a property");
+    const userId = user ? user.id : anonymousId;
+    
+    if (!userId) {
+      throw new Error("No user ID or anonymous ID available");
     }
     
     // Map our Property type to the database structure
     const { data, error } = await supabase
       .from('properties')
       .insert({
-        user_id: user.id, // Add the user_id from the authenticated user
+        user_id: userId,
         title: property.title,
         description: property.description,
         address: property.address,

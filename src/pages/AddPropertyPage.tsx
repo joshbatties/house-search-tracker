@@ -5,40 +5,38 @@ import { usePropertyStore } from "@/store/propertyStore";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Property } from "@/types/Property";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Link } from "react-router-dom";
 
 const AddPropertyPage = () => {
   const { addProperty } = usePropertyStore();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      setIsLoading(true);
-      const { data } = await supabase.auth.getSession();
-      setIsAuthenticated(!!data.session);
-      setIsLoading(false);
-    };
-
-    checkAuth();
-  }, []);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { session, anonymousId, incrementPropertyCount, isAnonymousLimitReached, propertyCount } = useAuth();
 
   const handleSubmit = async (data: Omit<Property, "id" | "createdAt" | "updatedAt" | "dateAdded">) => {
     try {
-      if (!isAuthenticated) {
+      if (isAnonymousLimitReached) {
         toast({
-          title: "Authentication Required",
-          description: "You must be logged in to add a property.",
+          title: "Property Limit Reached",
+          description: "You've reached the limit of 10 properties. Please create an account to add more.",
           variant: "destructive",
         });
+        navigate("/auth");
         return;
       }
 
+      setIsSubmitting(true);
       const newProperty = await addProperty(data);
+      
+      // Increment property count for anonymous users
+      if (!session && anonymousId) {
+        incrementPropertyCount();
+      }
       
       toast({
         title: "Property Added",
@@ -53,41 +51,10 @@ const AddPropertyPage = () => {
         description: "Failed to add property. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  if (isLoading) {
-    return (
-      <Layout>
-        <div className="space-y-6">
-          <Skeleton className="h-10 w-1/2" />
-          <Skeleton className="h-4 w-3/4" />
-          <div className="space-y-4">
-            <Skeleton className="h-[600px] w-full rounded-lg" />
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <Layout>
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Add New Property</h1>
-            <p className="text-muted-foreground">
-              Please log in to add a new property
-            </p>
-          </div>
-          
-          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-md">
-            You need to be logged in to add properties. Please sign in or create an account.
-          </div>
-        </div>
-      </Layout>
-    );
-  }
 
   return (
     <Layout>
@@ -99,7 +66,30 @@ const AddPropertyPage = () => {
           </p>
         </div>
         
-        <PropertyForm onSubmit={handleSubmit} />
+        {isAnonymousLimitReached ? (
+          <Alert className="bg-yellow-50 border-yellow-200">
+            <AlertTitle className="text-yellow-800">Property Limit Reached</AlertTitle>
+            <AlertDescription className="text-yellow-700">
+              You've added {propertyCount} properties. To add more, please{" "}
+              <Link to="/auth" className="font-medium underline">create an account</Link>.
+            </AlertDescription>
+          </Alert>
+        ) : !session && propertyCount > 0 ? (
+          <Alert className="bg-blue-50 border-blue-200 mb-6">
+            <AlertTitle className="text-blue-800">Anonymous Mode</AlertTitle>
+            <AlertDescription className="text-blue-700">
+              You've added {propertyCount} out of 10 allowed properties. Consider{" "}
+              <Link to="/auth" className="font-medium underline">creating an account</Link>{" "}
+              to save your properties permanently.
+            </AlertDescription>
+          </Alert>
+        ) : null}
+        
+        <PropertyForm 
+          onSubmit={handleSubmit} 
+          isSubmitting={isSubmitting}
+          isDisabled={isAnonymousLimitReached}
+        />
       </div>
     </Layout>
   );
