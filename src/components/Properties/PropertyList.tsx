@@ -8,15 +8,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Search, Filter, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const PropertyList = () => {
+interface PropertyListProps {
+  isLoading?: boolean;
+}
+
+const PropertyList = ({ isLoading }: PropertyListProps) => {
   const { properties, filteredProperties, setFilters, resetFilters, filters } = usePropertyStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   
   // Get minimum and maximum prices for the slider
-  const minPropertyPrice = Math.min(...properties.map(p => p.price));
-  const maxPropertyPrice = Math.max(...properties.map(p => p.price));
+  const minPropertyPrice = Math.min(...properties.map(p => p.price), 0);
+  const maxPropertyPrice = Math.max(...properties.map(p => p.price), 5000);
   
   // Local state for price range
   const [priceRange, setPriceRange] = useState<[number, number]>([
@@ -61,6 +66,35 @@ const PropertyList = () => {
   const toggleFilters = () => {
     setShowFilters(!showFilters);
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-20" />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="space-y-3">
+              <Skeleton className="h-[200px] w-full rounded-xl" />
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <div className="flex space-x-4">
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-4 w-1/4" />
+              </div>
+              <div className="flex justify-end">
+                <Skeleton className="h-10 w-28" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">

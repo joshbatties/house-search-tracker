@@ -1,6 +1,7 @@
 
 import { create } from 'zustand';
-import { Property, INITIAL_PROPERTIES } from '../types/Property';
+import { Property } from '../types/Property';
+import { propertyService } from '@/services/propertyService';
 
 interface PropertyState {
   properties: Property[];
@@ -13,18 +14,23 @@ interface PropertyState {
     status: string | null;
     favorite: boolean | null;
   };
-  addProperty: (property: Omit<Property, 'id' | 'dateAdded'>) => void;
-  updateProperty: (id: string, updates: Partial<Property>) => void;
-  deleteProperty: (id: string) => void;
-  toggleFavorite: (id: string) => void;
+  isLoading: boolean;
+  error: string | null;
+  addProperty: (property: Omit<Property, 'id' | 'dateAdded'>) => Promise<Property>;
+  updateProperty: (id: string, updates: Partial<Property>) => Promise<void>;
+  deleteProperty: (id: string) => Promise<void>;
+  toggleFavorite: (id: string) => Promise<void>;
   setFilters: (filters: Partial<PropertyState['filters']>) => void;
   resetFilters: () => void;
   getProperty: (id: string) => Property | undefined;
+  fetchProperties: () => Promise<void>;
 }
 
 export const usePropertyStore = create<PropertyState>((set, get) => ({
-  properties: INITIAL_PROPERTIES,
-  filteredProperties: INITIAL_PROPERTIES,
+  properties: [],
+  filteredProperties: [],
+  isLoading: false,
+  error: null,
   filters: {
     minPrice: null,
     maxPrice: null,
@@ -34,56 +40,141 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     favorite: null,
   },
   
-  addProperty: (property) => {
-    const newProperty: Property = {
-      ...property,
-      id: Math.random().toString(36).substr(2, 9),
-      dateAdded: new Date().toISOString(),
-    };
+  fetchProperties: async () => {
+    set({ isLoading: true, error: null });
     
-    set((state) => {
-      const properties = [...state.properties, newProperty];
-      return { 
+    try {
+      const properties = await propertyService.getProperties();
+      set({ 
         properties,
-        filteredProperties: applyFilters(properties, state.filters)
-      };
-    });
+        filteredProperties: applyFilters(properties, get().filters),
+        isLoading: false
+      });
+    } catch (error) {
+      console.error("Error fetching properties:", error);
+      set({ 
+        error: "Failed to load properties. Please try again later.", 
+        isLoading: false 
+      });
+    }
   },
   
-  updateProperty: (id, updates) => {
-    set((state) => {
-      const properties = state.properties.map(property => 
-        property.id === id ? { ...property, ...updates } : property
-      );
-      return { 
-        properties,
-        filteredProperties: applyFilters(properties, state.filters)
-      };
-    });
+  addProperty: async (property) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const newProperty = await propertyService.createProperty(property);
+      
+      set((state) => {
+        const properties = [...state.properties, newProperty];
+        return { 
+          properties,
+          filteredProperties: applyFilters(properties, state.filters),
+          isLoading: false
+        };
+      });
+      
+      return newProperty;
+    } catch (error) {
+      console.error("Error adding property:", error);
+      set({ 
+        error: "Failed to add property. Please try again later.", 
+        isLoading: false 
+      });
+      throw error;
+    }
   },
   
-  deleteProperty: (id) => {
-    set((state) => {
-      const properties = state.properties.filter(property => property.id !== id);
-      return { 
-        properties,
-        filteredProperties: applyFilters(properties, state.filters)
-      };
-    });
+  updateProperty: async (id, updates) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      await propertyService.updateProperty(id, updates);
+      
+      set((state) => {
+        const properties = state.properties.map(property => 
+          property.id === id ? { ...property, ...updates } : property
+        );
+        
+        return { 
+          properties,
+          filteredProperties: applyFilters(properties, state.filters),
+          isLoading: false
+        };
+      });
+    } catch (error) {
+      console.error("Error updating property:", error);
+      set({ 
+        error: "Failed to update property. Please try again later.", 
+        isLoading: false 
+      });
+      throw error;
+    }
   },
   
-  toggleFavorite: (id) => {
-    set((state) => {
-      const properties = state.properties.map(property => 
-        property.id === id 
-          ? { ...property, favorite: !property.favorite } 
-          : property
-      );
-      return { 
-        properties,
-        filteredProperties: applyFilters(properties, state.filters)
-      };
-    });
+  deleteProperty: async (id) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      await propertyService.deleteProperty(id);
+      
+      set((state) => {
+        const properties = state.properties.filter(property => property.id !== id);
+        return { 
+          properties,
+          filteredProperties: applyFilters(properties, state.filters),
+          isLoading: false
+        };
+      });
+    } catch (error) {
+      console.error("Error deleting property:", error);
+      set({ 
+        error: "Failed to delete property. Please try again later.", 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+  
+  toggleFavorite: async (id) => {
+    try {
+      const property = get().properties.find(p => p.id === id);
+      if (!property) return;
+      
+      // Optimistically update the UI
+      set((state) => {
+        const properties = state.properties.map(property => 
+          property.id === id 
+            ? { ...property, favorite: !property.favorite } 
+            : property
+        );
+        
+        return { 
+          properties,
+          filteredProperties: applyFilters(properties, state.filters),
+        };
+      });
+      
+      // Then update in the database
+      await propertyService.toggleFavorite(id, property.favorite);
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      
+      // Revert the optimistic update
+      set((state) => {
+        const properties = state.properties.map(property => 
+          property.id === id 
+            ? { ...property, favorite: !property.favorite } 
+            : property
+        );
+        
+        return { 
+          properties,
+          filteredProperties: applyFilters(properties, state.filters),
+          error: "Failed to update favorite status. Please try again.",
+        };
+      });
+    }
   },
   
   setFilters: (newFilters) => {

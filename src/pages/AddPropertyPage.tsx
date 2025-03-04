@@ -5,30 +5,29 @@ import { usePropertyStore } from "@/store/propertyStore";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Property } from "@/types/Property";
-import { v4 as uuidv4 } from 'uuid';
 
 const AddPropertyPage = () => {
   const { addProperty } = usePropertyStore();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = (data: Omit<Property, "id" | "createdAt" | "updatedAt" | "dateAdded">) => {
-    const newProperty = {
-      ...data,
-      id: uuidv4(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      dateAdded: new Date().toISOString(),
-    };
-
-    addProperty(newProperty);
-    
-    toast({
-      title: "Property Added",
-      description: "Your property has been successfully added.",
-    });
-    
-    navigate(`/properties/${newProperty.id}`);
+  const handleSubmit = async (data: Omit<Property, "id" | "createdAt" | "updatedAt" | "dateAdded">) => {
+    try {
+      const newProperty = await addProperty(data);
+      
+      toast({
+        title: "Property Added",
+        description: "Your property has been successfully added.",
+      });
+      
+      navigate(`/properties/${newProperty.id}`);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add property. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

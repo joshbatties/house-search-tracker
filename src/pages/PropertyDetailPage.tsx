@@ -1,4 +1,5 @@
 
+import { useEffect, useState } from "react";
 import Layout from "@/components/Layout/Layout";
 import PropertyDetail from "@/components/Properties/PropertyDetail";
 import { useParams, useNavigate, Link } from "react-router-dom";
@@ -17,37 +18,86 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Property } from "@/types/Property";
+import { propertyService } from "@/services/propertyService";
 
 const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const { properties, deleteProperty } = usePropertyStore();
-  // Get property by id
-  const property = properties.find(p => p.id === id);
+  const { deleteProperty, fetchProperties } = usePropertyStore();
+  const [property, setProperty] = useState<Property | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleDelete = () => {
-    if (id) {
-      deleteProperty(id);
+  useEffect(() => {
+    if (!id) return;
+
+    const loadProperty = async () => {
+      setIsLoading(true);
+      try {
+        const data = await propertyService.getProperty(id);
+        if (data) {
+          setProperty(data);
+        } else {
+          setError("Property not found");
+        }
+      } catch (err) {
+        console.error("Error fetching property:", err);
+        setError("Failed to load property details. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProperty();
+  }, [id]);
+
+  const handleDelete = async () => {
+    if (!id) return;
+    
+    try {
+      await deleteProperty(id);
+      
       toast({
         title: "Property Deleted",
         description: "The property has been successfully deleted.",
       });
+      
       navigate("/properties");
+      
+      // Refresh the properties list
+      fetchProperties();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete property. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-  if (!property) {
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center min-h-[60vh]">
+          <div className="animate-pulse text-xl font-semibold">Loading...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error || !property) {
     return (
       <Layout>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <h1 className="text-2xl font-bold">Property Not Found</h1>
           <p className="text-muted-foreground">
-            The property you're looking for doesn't exist or has been removed.
+            {error || "The property you're looking for doesn't exist or has been removed."}
           </p>
           <Button asChild>
-            <a href="/properties">View All Properties</a>
+            <Link to="/properties">View All Properties</Link>
           </Button>
         </div>
       </Layout>

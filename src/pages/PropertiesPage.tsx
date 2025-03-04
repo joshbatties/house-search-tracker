@@ -1,11 +1,27 @@
 
+import { useEffect } from "react";
 import Layout from "@/components/Layout/Layout";
 import PropertyList from "@/components/Properties/PropertyList";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
+import { usePropertyStore } from "@/store/propertyStore";
+import { useToast } from "@/components/ui/use-toast";
 
 const PropertiesPage = () => {
+  const { fetchProperties, isLoading, error } = usePropertyStore();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchProperties().catch(() => {
+      toast({
+        title: "Error",
+        description: "Failed to load properties. Please refresh the page.",
+        variant: "destructive",
+      });
+    });
+  }, [fetchProperties, toast]);
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -24,7 +40,13 @@ const PropertiesPage = () => {
           </Button>
         </div>
         
-        <PropertyList />
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 p-4 rounded-md">
+            {error}
+          </div>
+        )}
+        
+        <PropertyList isLoading={isLoading} />
       </div>
     </Layout>
   );

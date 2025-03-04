@@ -127,6 +127,93 @@ export type Database = {
         }
         Relationships: []
       }
+      properties: {
+        Row: {
+          address: string
+          amenities: string[] | null
+          bathrooms: number
+          bedrooms: number
+          city: string
+          contactemail: string | null
+          contactname: string | null
+          contactphone: string | null
+          created_at: string | null
+          dateadded: string | null
+          description: string | null
+          favorite: boolean | null
+          id: string
+          imageurl: string | null
+          latitude: number | null
+          listingurl: string | null
+          longitude: number | null
+          notes: string | null
+          price: number
+          squarefeet: number
+          state: string
+          status: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          zipcode: string
+        }
+        Insert: {
+          address: string
+          amenities?: string[] | null
+          bathrooms: number
+          bedrooms: number
+          city: string
+          contactemail?: string | null
+          contactname?: string | null
+          contactphone?: string | null
+          created_at?: string | null
+          dateadded?: string | null
+          description?: string | null
+          favorite?: boolean | null
+          id?: string
+          imageurl?: string | null
+          latitude?: number | null
+          listingurl?: string | null
+          longitude?: number | null
+          notes?: string | null
+          price: number
+          squarefeet: number
+          state: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          zipcode: string
+        }
+        Update: {
+          address?: string
+          amenities?: string[] | null
+          bathrooms?: number
+          bedrooms?: number
+          city?: string
+          contactemail?: string | null
+          contactname?: string | null
+          contactphone?: string | null
+          created_at?: string | null
+          dateadded?: string | null
+          description?: string | null
+          favorite?: boolean | null
+          id?: string
+          imageurl?: string | null
+          latitude?: number | null
+          listingurl?: string | null
+          longitude?: number | null
+          notes?: string | null
+          price?: number
+          squarefeet?: number
+          state?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          zipcode?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
