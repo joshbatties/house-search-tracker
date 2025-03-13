@@ -10,8 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { PlusCircle, MinusCircle } from "lucide-react";
 
-// Update the PropertyFormProps interface to include additional props
 export interface PropertyFormProps {
   editProperty?: Property;
   onSubmit: (data: Omit<Property, "id" | "createdAt" | "updatedAt" | "dateAdded">) => void;
@@ -48,15 +48,18 @@ const PropertyForm = ({
       favorite: false,
       status: 'interested',
       amenities: [],
+      positiveFeatures: [],
+      negativeFeatures: [],
     }
   );
 
   const [amenityInput, setAmenityInput] = useState('');
+  const [positiveFeatureInput, setPositiveFeatureInput] = useState('');
+  const [negativeFeatureInput, setNegativeFeatureInput] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
-    // Convert numeric fields
     if (['price', 'bedrooms', 'bathrooms', 'squareFeet', 'latitude', 'longitude'].includes(name)) {
       setFormData({
         ...formData,
@@ -96,11 +99,48 @@ const PropertyForm = ({
     }
   };
 
+  const addPositiveFeature = () => {
+    if (positiveFeatureInput.trim() && formData.positiveFeatures) {
+      setFormData({
+        ...formData,
+        positiveFeatures: [...formData.positiveFeatures, positiveFeatureInput.trim()],
+      });
+      setPositiveFeatureInput('');
+    }
+  };
+
+  const removePositiveFeature = (index: number) => {
+    if (formData.positiveFeatures) {
+      setFormData({
+        ...formData,
+        positiveFeatures: formData.positiveFeatures.filter((_, i) => i !== index),
+      });
+    }
+  };
+
+  const addNegativeFeature = () => {
+    if (negativeFeatureInput.trim() && formData.negativeFeatures) {
+      setFormData({
+        ...formData,
+        negativeFeatures: [...formData.negativeFeatures, negativeFeatureInput.trim()],
+      });
+      setNegativeFeatureInput('');
+    }
+  };
+
+  const removeNegativeFeature = (index: number) => {
+    if (formData.negativeFeatures) {
+      setFormData({
+        ...formData,
+        negativeFeatures: formData.negativeFeatures.filter((_, i) => i !== index),
+      });
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      // Validate required fields
       const requiredFields = ['title', 'price', 'address', 'city', 'state'];
       const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
       
@@ -109,7 +149,6 @@ const PropertyForm = ({
         return;
       }
       
-      // Call the onSubmit handler passed as a prop
       onSubmit(formData as Omit<Property, "id" | "createdAt" | "updatedAt" | "dateAdded">);
     } catch (error) {
       toast.error('An error occurred while saving the property.');
@@ -388,6 +427,100 @@ const PropertyForm = ({
                   </button>
                 </div>
               ))}
+            </div>
+          </div>
+          
+          <Separator />
+          
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Property Features</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="positive-features" className="flex items-center gap-2 mb-2">
+                  <PlusCircle className="h-4 w-4 text-green-500" />
+                  Positive Features
+                </Label>
+                <div className="flex space-x-2">
+                  <Input
+                    id="positive-features"
+                    value={positiveFeatureInput}
+                    onChange={(e) => setPositiveFeatureInput(e.target.value)}
+                    placeholder="Add positive feature (e.g., Close to public transit)"
+                    className="flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addPositiveFeature();
+                      }
+                    }}
+                  />
+                  <Button type="button" onClick={addPositiveFeature} variant="outline">
+                    Add
+                  </Button>
+                </div>
+                
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.positiveFeatures?.map((feature, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-3 py-1 rounded-full text-sm"
+                    >
+                      {feature}
+                      <button
+                        type="button"
+                        onClick={() => removePositiveFeature(index)}
+                        className="ml-2 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="negative-features" className="flex items-center gap-2 mb-2">
+                  <MinusCircle className="h-4 w-4 text-red-500" />
+                  Negative Features
+                </Label>
+                <div className="flex space-x-2">
+                  <Input
+                    id="negative-features"
+                    value={negativeFeatureInput}
+                    onChange={(e) => setNegativeFeatureInput(e.target.value)}
+                    placeholder="Add negative feature (e.g., Limited parking)"
+                    className="flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addNegativeFeature();
+                      }
+                    }}
+                  />
+                  <Button type="button" onClick={addNegativeFeature} variant="outline">
+                    Add
+                  </Button>
+                </div>
+                
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.negativeFeatures?.map((feature, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-sm"
+                    >
+                      {feature}
+                      <button
+                        type="button"
+                        onClick={() => removeNegativeFeature(index)}
+                        className="ml-2 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
           

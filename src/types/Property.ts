@@ -23,6 +23,8 @@ export interface Property {
   contactPhone?: string;
   contactEmail?: string;
   amenities: string[];
+  positiveFeatures: string[];
+  negativeFeatures: string[];
 }
 
 export const INITIAL_PROPERTIES: Property[] = [
@@ -49,7 +51,9 @@ export const INITIAL_PROPERTIES: Property[] = [
     contactName: "John Smith",
     contactPhone: "415-555-1234",
     contactEmail: "john@example.com",
-    amenities: ["In-unit Laundry", "Dishwasher", "Parking", "Gym", "Roof Deck"]
+    amenities: ["In-unit Laundry", "Dishwasher", "Parking", "Gym", "Roof Deck"],
+    positiveFeatures: ["Close to public transit", "Modern appliances", "Large windows"],
+    negativeFeatures: ["Street noise", "Small closets"]
   },
   {
     id: "p2",
@@ -74,7 +78,9 @@ export const INITIAL_PROPERTIES: Property[] = [
     contactName: "Sarah Johnson",
     contactPhone: "510-555-6789",
     contactEmail: "sarah@example.com",
-    amenities: ["Garden Access", "Utilities Included", "Pet Friendly"]
+    amenities: ["Garden Access", "Utilities Included", "Pet Friendly"],
+    positiveFeatures: ["Private entrance", "Quiet area", "Garden access"],
+    negativeFeatures: ["Limited kitchen space", "No parking"]
   },
   {
     id: "p3",
@@ -99,6 +105,8 @@ export const INITIAL_PROPERTIES: Property[] = [
     contactName: "Michael Chen",
     contactPhone: "415-555-9876",
     contactEmail: "michael@example.com",
-    amenities: ["Concierge", "Pool", "Hot Tub", "Fitness Center", "Theater Room", "Pet Spa"]
+    amenities: ["Concierge", "Pool", "Hot Tub", "Fitness Center", "Theater Room", "Pet Spa"],
+    positiveFeatures: ["Amazing views", "High-end finishes", "Great amenities"],
+    negativeFeatures: ["High HOA fees", "Minimum lease term"]
   }
 ];

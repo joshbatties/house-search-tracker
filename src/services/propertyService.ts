@@ -52,6 +52,8 @@ export const propertyService = {
       contactPhone: item.contactphone,
       contactEmail: item.contactemail,
       amenities: item.amenities || [],
+      positiveFeatures: item.positivefeatures || [],
+      negativeFeatures: item.negativefeatures || [],
     }));
   },
   
@@ -93,6 +95,8 @@ export const propertyService = {
       contactPhone: data.contactphone,
       contactEmail: data.contactemail,
       amenities: data.amenities || [],
+      positiveFeatures: data.positivefeatures || [],
+      negativeFeatures: data.negativefeatures || [],
     };
   },
   
@@ -133,6 +137,8 @@ export const propertyService = {
         contactphone: property.contactPhone,
         contactemail: property.contactEmail,
         amenities: property.amenities,
+        positivefeatures: property.positiveFeatures,
+        negativefeatures: property.negativeFeatures,
       })
       .select()
       .single();
@@ -166,6 +172,8 @@ export const propertyService = {
       contactPhone: data.contactphone,
       contactEmail: data.contactemail,
       amenities: data.amenities || [],
+      positiveFeatures: data.positivefeatures || [],
+      negativeFeatures: data.negativefeatures || [],
     };
   },
   
@@ -194,6 +202,8 @@ export const propertyService = {
     if (updates.contactPhone !== undefined) dbUpdates.contactphone = updates.contactPhone;
     if (updates.contactEmail !== undefined) dbUpdates.contactemail = updates.contactEmail;
     if (updates.amenities !== undefined) dbUpdates.amenities = updates.amenities;
+    if (updates.positiveFeatures !== undefined) dbUpdates.positivefeatures = updates.positiveFeatures;
+    if (updates.negativeFeatures !== undefined) dbUpdates.negativefeatures = updates.negativeFeatures;
     
     // Add updated_at timestamp
     dbUpdates.updated_at = new Date().toISOString();

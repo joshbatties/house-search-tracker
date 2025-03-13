@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout/Layout";
 import { usePropertyStore } from "@/store/propertyStore";
@@ -11,7 +12,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Check, Home, X } from "lucide-react";
+import { Check, Home, X, PlusCircle, MinusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -213,6 +214,48 @@ const ComparisonPage = () => {
                                 <Check className="text-green-500 h-5 w-5" /> : 
                                 <X className="text-red-500 h-5 w-5" />
                               }
+                            </td>
+                          ))}
+                        </tr>
+                        
+                        {/* Positive Features */}
+                        <tr className="border-b bg-green-50 dark:bg-green-950/20">
+                          <td className="py-3 font-medium flex items-center gap-2">
+                            <PlusCircle className="h-4 w-4 text-green-500" /> 
+                            Positive Features
+                          </td>
+                          {comparisonData.map((property) => (
+                            <td key={property.id} className="py-3">
+                              {property.positiveFeatures && property.positiveFeatures.length > 0 ? (
+                                <ul className="list-disc pl-5 space-y-1">
+                                  {property.positiveFeatures.map((feature, idx) => (
+                                    <li key={idx} className="text-green-700 dark:text-green-400">{feature}</li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <span className="text-gray-500">None listed</span>
+                              )}
+                            </td>
+                          ))}
+                        </tr>
+                        
+                        {/* Negative Features */}
+                        <tr className="border-b bg-red-50 dark:bg-red-950/20">
+                          <td className="py-3 font-medium flex items-center gap-2">
+                            <MinusCircle className="h-4 w-4 text-red-500" /> 
+                            Negative Features
+                          </td>
+                          {comparisonData.map((property) => (
+                            <td key={property.id} className="py-3">
+                              {property.negativeFeatures && property.negativeFeatures.length > 0 ? (
+                                <ul className="list-disc pl-5 space-y-1">
+                                  {property.negativeFeatures.map((feature, idx) => (
+                                    <li key={idx} className="text-red-700 dark:text-red-400">{feature}</li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <span className="text-gray-500">None listed</span>
+                              )}
                             </td>
                           ))}
                         </tr>
