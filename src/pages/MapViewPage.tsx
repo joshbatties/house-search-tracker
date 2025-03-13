@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 
 const MapViewPage = () => {
-  const { properties, loading, fetchProperties } = usePropertyStore();
+  const { properties, isLoading, fetchProperties } = usePropertyStore();
   const { toast } = useToast();
   
   // Fetch properties when component mounts
@@ -38,7 +38,7 @@ const MapViewPage = () => {
         </div>
         
         <div className="h-[70vh] rounded-lg overflow-hidden border">
-          {loading ? (
+          {isLoading ? (
             <div className="h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
               <p className="text-gray-500 dark:text-gray-400">Loading map...</p>
             </div>
