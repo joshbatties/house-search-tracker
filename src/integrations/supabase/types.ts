@@ -146,7 +146,9 @@ export type Database = {
           latitude: number | null
           listingurl: string | null
           longitude: number | null
+          negativefeatures: string[] | null
           notes: string | null
+          positivefeatures: string[] | null
           price: number
           squarefeet: number
           state: string
@@ -174,7 +176,9 @@ export type Database = {
           latitude?: number | null
           listingurl?: string | null
           longitude?: number | null
+          negativefeatures?: string[] | null
           notes?: string | null
+          positivefeatures?: string[] | null
           price: number
           squarefeet: number
           state: string
@@ -202,7 +206,9 @@ export type Database = {
           latitude?: number | null
           listingurl?: string | null
           longitude?: number | null
+          negativefeatures?: string[] | null
           notes?: string | null
+          positivefeatures?: string[] | null
           price?: number
           squarefeet?: number
           state?: string
