@@ -19,6 +19,7 @@ export interface Property {
   notes: string;
   favorite: boolean;
   status: 'interested' | 'viewed' | 'applied' | 'rejected' | 'accepted';
+  propertyType: 'rent' | 'buy';
   contactName?: string;
   contactPhone?: string;
   contactEmail?: string;
@@ -48,6 +49,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     notes: "Great location near public transportation and restaurants",
     favorite: true,
     status: "viewed",
+    propertyType: "rent",
     contactName: "John Smith",
     contactPhone: "415-555-1234",
     contactEmail: "john@example.com",
@@ -75,6 +77,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     notes: "Quiet neighborhood, close to campus",
     favorite: false,
     status: "interested",
+    propertyType: "rent",
     contactName: "Sarah Johnson",
     contactPhone: "510-555-6789",
     contactEmail: "sarah@example.com",
@@ -102,6 +105,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     notes: "24/7 doorman, amazing amenities, 1-year lease minimum",
     favorite: true,
     status: "applied",
+    propertyType: "buy",
     contactName: "Michael Chen",
     contactPhone: "415-555-9876",
     contactEmail: "michael@example.com",

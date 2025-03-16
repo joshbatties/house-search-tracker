@@ -25,6 +25,7 @@ export function mapDbPropertyToProperty(data: any): Property {
     notes: data.notes || "",
     favorite: data.favorite || false,
     status: data.status as Property["status"],
+    propertyType: data.propertytype || "rent",
     contactName: data.contactname,
     contactPhone: data.contactphone,
     contactEmail: data.contactemail,

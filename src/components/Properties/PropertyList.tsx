@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Search, Filter, X } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Search, Filter, X, Home, Key } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 interface PropertyListProps {
   isLoading?: boolean;
@@ -18,6 +20,7 @@ const PropertyList = ({ isLoading }: PropertyListProps) => {
   const { properties, filteredProperties, setFilters, resetFilters, filters } = usePropertyStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [propertyType, setPropertyType] = useState<string | null>(null);
   
   // Get minimum and maximum prices for the slider
   const minPropertyPrice = Math.min(...properties.map(p => p.price), 0);
@@ -32,6 +35,13 @@ const PropertyList = ({ isLoading }: PropertyListProps) => {
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+  };
+  
+  // Handle property type selection
+  const handlePropertyTypeChange = (value: string) => {
+    const newValue = value === propertyType ? null : value;
+    setPropertyType(newValue);
+    setFilters({ propertyType: newValue as 'rent' | 'buy' | null });
   };
   
   // Apply search filter
@@ -50,7 +60,8 @@ const PropertyList = ({ isLoading }: PropertyListProps) => {
   const applyFilters = () => {
     setFilters({
       minPrice: priceRange[0],
-      maxPrice: priceRange[1]
+      maxPrice: priceRange[1],
+      propertyType: propertyType as 'rent' | 'buy' | null
     });
   };
   
@@ -59,6 +70,7 @@ const PropertyList = ({ isLoading }: PropertyListProps) => {
     resetFilters();
     setSearchTerm('');
     setPriceRange([minPropertyPrice, maxPropertyPrice]);
+    setPropertyType(null);
     setShowFilters(false);
   };
   
@@ -96,6 +108,13 @@ const PropertyList = ({ isLoading }: PropertyListProps) => {
     );
   }
   
+  // Function to get the price label based on property type
+  const getPriceLabel = (type: string | null) => {
+    if (type === 'buy') return 'Purchase Price';
+    if (type === 'rent') return 'Monthly Rent';
+    return 'Price Range';
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row gap-4">
@@ -110,6 +129,23 @@ const PropertyList = ({ isLoading }: PropertyListProps) => {
           />
         </div>
         
+        <ToggleGroup type="single" value={propertyType || ""} onValueChange={handlePropertyTypeChange} className="justify-start">
+          <ToggleGroupItem value="rent" aria-label="Filter by Rentals" className={cn(
+            "flex items-center gap-1.5",
+            propertyType === "rent" ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800" : ""
+          )}>
+            <Key size={16} />
+            <span>Rent</span>
+          </ToggleGroupItem>
+          <ToggleGroupItem value="buy" aria-label="Filter by Properties For Sale" className={cn(
+            "flex items-center gap-1.5",
+            propertyType === "buy" ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800" : ""
+          )}>
+            <Home size={16} />
+            <span>Buy</span>
+          </ToggleGroupItem>
+        </ToggleGroup>
+        
         <div className="flex space-x-2">
           <Button
             variant="outline"
@@ -122,7 +158,8 @@ const PropertyList = ({ isLoading }: PropertyListProps) => {
           
           {(searchTerm || filters.minPrice !== null || filters.maxPrice !== null || 
             filters.minBedrooms !== null || filters.minBathrooms !== null || 
-            filters.status !== null || filters.favorite !== null) && (
+            filters.status !== null || filters.favorite !== null || 
+            filters.propertyType !== null) && (
             <Button
               variant="ghost"
               size="sm"
@@ -148,7 +185,7 @@ const PropertyList = ({ isLoading }: PropertyListProps) => {
             <div className="p-6 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-800">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="space-y-3">
-                  <h3 className="font-medium text-sm">Price Range</h3>
+                  <h3 className="font-medium text-sm">{getPriceLabel(propertyType)}</h3>
                   <Slider
                     value={priceRange}
                     min={minPropertyPrice}

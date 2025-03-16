@@ -1,125 +1,165 @@
 
-import { Property } from '@/types/Property';
-import { Heart, ExternalLink, MapPin, Bed, Bath, Home, Edit } from 'lucide-react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { usePropertyStore } from '@/store/propertyStore';
-import { formatDistanceToNow } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { Property } from '@/types/Property';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import { usePropertyStore } from '@/store/propertyStore';
+import { 
+  Building, 
+  Bookmark, 
+  BookmarkCheck, 
+  Eye, 
+  FileText, 
+  CheckSquare, 
+  XSquare,
+  DollarSign,
+  Home,
+  Key
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface PropertyCardProps {
   property: Property;
 }
 
-const statusColors = {
-  interested: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  viewed: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  applied: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-  accepted: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-};
-
-export const PropertyCard = ({ property }: PropertyCardProps) => {
+const PropertyCard = ({ property }: PropertyCardProps) => {
   const { toggleFavorite } = usePropertyStore();
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   
-  const timeAgo = formatDistanceToNow(new Date(property.dateAdded), { addSuffix: true });
+  const statusColors = {
+    interested: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+    viewed: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+    applied: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+    accepted: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+    rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  };
+  
+  const statusIcons = {
+    interested: <FileText size={14} />,
+    viewed: <Eye size={14} />,
+    applied: <Building size={14} />,
+    accepted: <CheckSquare size={14} />,
+    rejected: <XSquare size={14} />,
+  };
+  
+  // Get the appropriate price label based on property type
+  const getPriceLabel = () => {
+    return property.propertyType === 'buy' 
+      ? `$${property.price.toLocaleString()}` 
+      : `$${property.price.toLocaleString()}/mo`;
+  };
+  
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isTogglingFavorite) return;
+    
+    setIsTogglingFavorite(true);
+    
+    try {
+      await toggleFavorite(property.id);
+      
+      toast(property.favorite ? "Removed from favorites" : "Added to favorites", {
+        icon: property.favorite ? "💔" : "❤️",
+      });
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    } finally {
+      setIsTogglingFavorite(false);
+    }
+  };
   
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.3 }}
-      className="relative glass-card overflow-hidden group hover-lift"
-    >
-      <div className="relative aspect-video overflow-hidden rounded-t-xl">
-        <img 
-          src={property.imageUrl} 
-          alt={property.title}
-          className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-        
-        <div className="absolute top-3 left-3 flex space-x-2">
-          <Badge className={cn("font-medium capitalize", statusColors[property.status])}>
-            {property.status}
-          </Badge>
-        </div>
-        
-        <button 
-          onClick={() => toggleFavorite(property.id)}
-          className="absolute top-3 right-3 p-2 rounded-full bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 hover:bg-white dark:hover:bg-gray-900 transition-colors"
-          aria-label={property.favorite ? "Remove from favorites" : "Add to favorites"}
-        >
-          <Heart 
-            size={18} 
-            className={cn(
-              "transition-colors", 
-              property.favorite ? "fill-red-500 text-red-500" : "text-gray-600 dark:text-gray-300"
-            )} 
-          />
-        </button>
-        
-        <div className="absolute bottom-3 right-3">
-          <a 
-            href={property.listingUrl} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="p-2 rounded-full bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 hover:bg-white dark:hover:bg-gray-900 transition-colors text-gray-700 dark:text-gray-300"
-            aria-label="View original listing"
+    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+      <div className="relative">
+        <Link to={`/properties/${property.id}`} className="block">
+          <div className="aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-800">
+            {property.imageUrl ? (
+              <img 
+                src={property.imageUrl} 
+                alt={property.title} 
+                className="w-full h-full object-cover transition-transform hover:scale-105"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                <Building size={48} />
+              </div>
+            )}
+          </div>
+          
+          <button
+            onClick={handleToggleFavorite}
+            className="absolute top-3 right-3 p-1.5 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 transition-colors"
+            disabled={isTogglingFavorite}
           >
-            <ExternalLink size={18} />
-          </a>
-        </div>
+            {property.favorite ? (
+              <BookmarkCheck className="h-5 w-5 text-red-500" />
+            ) : (
+              <Bookmark className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+            )}
+          </button>
+          
+          <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+            <Badge
+              className={cn(
+                "flex items-center gap-1",
+                statusColors[property.status]
+              )}
+              variant="outline"
+            >
+              {statusIcons[property.status]}
+              {property.status.charAt(0).toUpperCase() + property.status.slice(1)}
+            </Badge>
+            
+            <Badge
+              variant="outline"
+              className={cn(
+                "flex items-center gap-1",
+                property.propertyType === 'rent' 
+                  ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" 
+                  : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+              )}
+            >
+              {property.propertyType === 'rent' ? (
+                <Key size={14} />
+              ) : (
+                <Home size={14} />
+              )}
+              {property.propertyType === 'rent' ? 'Rent' : 'Buy'}
+            </Badge>
+          </div>
+        </Link>
       </div>
       
-      <div className="p-4">
-        <div className="flex justify-between items-start gap-2 mb-2">
-          <h3 className="font-semibold text-lg leading-tight truncate">
-            {property.title}
-          </h3>
-          <span className="text-lg font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap">
-            ${property.price.toLocaleString()}
-          </span>
-        </div>
-        
-        <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-3">
-          <MapPin size={14} className="mr-1 flex-shrink-0" />
-          <span className="truncate">
-            {property.city}, {property.state} {property.zipCode}
-          </span>
-        </div>
-        
-        <div className="flex justify-between mb-4">
-          <div className="flex items-center text-gray-600 dark:text-gray-300">
-            <Bed size={16} className="mr-1" />
-            <span className="mr-3">{property.bedrooms}</span>
+      <CardContent className="p-4">
+        <Link to={`/properties/${property.id}`} className="block">
+          <div className="space-y-3">
+            <div>
+              <div className="flex justify-between items-start">
+                <h3 className="font-semibold line-clamp-1">{property.title}</h3>
+                <div className="font-medium text-right flex items-center">
+                  {property.propertyType === 'buy' ? <DollarSign className="h-4 w-4 text-green-600" /> : null}
+                  {getPriceLabel()}
+                </div>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
+                {property.address}, {property.city}
+              </p>
+            </div>
             
-            <Bath size={16} className="mr-1" />
-            <span className="mr-3">{property.bathrooms}</span>
-            
-            <Home size={16} className="mr-1" />
-            <span>{property.squareFeet.toLocaleString()} sf</span>
+            <div className="flex items-center gap-4 text-sm">
+              <div>{property.bedrooms === 0 ? 'Studio' : `${property.bedrooms} bd`}</div>
+              <div>{property.bathrooms} ba</div>
+              <div>{property.squareFeet.toLocaleString()} sqft</div>
+            </div>
           </div>
-        </div>
-
-        <div className="flex justify-between items-center">
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            Added {timeAgo}
-          </span>
-          
-          <div className="flex space-x-2">
-            <Link 
-              to={`/properties/${property.id}`}
-              className="flex items-center justify-center py-1.5 px-3 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-800/30 text-sm font-medium transition-colors"
-            >
-              View Details
-            </Link>
-          </div>
-        </div>
-      </div>
-    </motion.div>
+        </Link>
+      </CardContent>
+    </Card>
   );
 };
 

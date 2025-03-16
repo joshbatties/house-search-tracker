@@ -12,6 +12,7 @@ interface PropertyState {
     minBathrooms: number | null;
     status: string | null;
     favorite: boolean | null;
+    propertyType: 'rent' | 'buy' | null;
   };
   isLoading: boolean;
   error: string | null;
@@ -37,6 +38,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     minBathrooms: null,
     status: null,
     favorite: null,
+    propertyType: null,
   },
   
   fetchProperties: async () => {
@@ -195,6 +197,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         minBathrooms: null,
         status: null,
         favorite: null,
+        propertyType: null,
       },
       filteredProperties: state.properties
     }));
@@ -223,6 +226,9 @@ const applyFilters = (properties: Property[], filters: PropertyState['filters'])
     
     // Favorite filter
     if (filters.favorite !== null && property.favorite !== filters.favorite) return false;
+    
+    // Property type filter
+    if (filters.propertyType !== null && property.propertyType !== filters.propertyType) return false;
     
     return true;
   });

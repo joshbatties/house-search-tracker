@@ -23,6 +23,7 @@ export async function updateProperty(id: string, updates: Partial<PropertyInput>
   if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
   if (updates.favorite !== undefined) dbUpdates.favorite = updates.favorite;
   if (updates.status !== undefined) dbUpdates.status = updates.status;
+  if (updates.propertyType !== undefined) dbUpdates.propertytype = updates.propertyType;
   if (updates.contactName !== undefined) dbUpdates.contactname = updates.contactName;
   if (updates.contactPhone !== undefined) dbUpdates.contactphone = updates.contactPhone;
   if (updates.contactEmail !== undefined) dbUpdates.contactemail = updates.contactEmail;

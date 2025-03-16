@@ -36,6 +36,7 @@ export async function createProperty(property: PropertyInput): Promise<Property>
       notes: property.notes,
       favorite: property.favorite,
       status: property.status,
+      propertytype: property.propertyType,
       contactname: property.contactName,
       contactphone: property.contactPhone,
       contactemail: property.contactEmail,
