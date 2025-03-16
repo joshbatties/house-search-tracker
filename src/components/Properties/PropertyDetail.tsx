@@ -8,6 +8,10 @@ import { Separator } from '@/components/ui/separator';
 import { ExternalLink, Heart, MapPin, Calendar, DollarSign, Home, Maximize, Bath, BedDouble, Check } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import MapView from '@/components/Map/MapView';
+import PropertyNotes from '@/components/Properties/Notes/PropertyNotes';
+import PropertyReminders from '@/components/Properties/Reminders/PropertyReminders';
+import PropertyViewingSchedule from '@/components/Properties/Viewings/PropertyViewingSchedule';
+import PropertyNeighborhood from '@/components/Properties/Neighborhood/PropertyNeighborhood';
 
 interface PropertyDetailProps {
   property: Property;
@@ -53,9 +57,11 @@ const PropertyDetail = ({ property }: PropertyDetailProps) => {
           
           {/* Property details tabs */}
           <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid grid-cols-3 mb-4">
+            <TabsList className="grid grid-cols-5 mb-4">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="amenities">Amenities</TabsTrigger>
+              <TabsTrigger value="notes">Notes</TabsTrigger>
+              <TabsTrigger value="neighborhood">Neighborhood</TabsTrigger>
               <TabsTrigger value="map">Map</TabsTrigger>
             </TabsList>
             
@@ -141,6 +147,15 @@ const PropertyDetail = ({ property }: PropertyDetailProps) => {
               </Card>
             </TabsContent>
             
+            <TabsContent value="notes" className="space-y-4">
+              <PropertyNotes />
+              <PropertyReminders />
+            </TabsContent>
+
+            <TabsContent value="neighborhood">
+              <PropertyNeighborhood />
+            </TabsContent>
+            
             <TabsContent value="map">
               <Card>
                 <CardContent className="p-0 overflow-hidden">
@@ -214,6 +229,8 @@ const PropertyDetail = ({ property }: PropertyDetailProps) => {
               </div>
             </CardContent>
           </Card>
+          
+          <PropertyViewingSchedule />
           
           <Card>
             <CardContent className="pt-6">

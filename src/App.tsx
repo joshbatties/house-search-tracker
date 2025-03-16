@@ -13,6 +13,7 @@ import EditPropertyPage from "./pages/EditPropertyPage";
 import ComparisonPage from "./pages/ComparisonPage";
 import MapViewPage from "./pages/MapViewPage";
 import AuthPage from "./pages/AuthPage";
+import CalendarPage from "./pages/CalendarPage";
 import { AuthProvider } from "./hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/edit-property/:id" element={<EditPropertyPage />} />
             <Route path="/comparison" element={<ComparisonPage />} />
             <Route path="/map" element={<MapViewPage />} />
+            <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/auth" element={<AuthPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
