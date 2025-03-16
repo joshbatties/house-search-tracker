@@ -1,7 +1,6 @@
-
 import { create } from 'zustand';
 import { Property } from '../types/Property';
-import { propertyService } from '@/services/propertyService';
+import { propertyService } from '@/services/property';
 
 interface PropertyState {
   properties: Property[];
