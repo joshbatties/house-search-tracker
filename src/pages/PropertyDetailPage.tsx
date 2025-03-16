@@ -19,7 +19,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Property } from "@/types/Property";
-import { propertyService } from "@/services/propertyService";
+import { propertyService } from "@/services/property";
 
 const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
