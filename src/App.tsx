@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import PropertiesPage from "./pages/PropertiesPage";
 import PropertyDetailPage from "./pages/PropertyDetailPage";
 import AddPropertyPage from "./pages/AddPropertyPage";
+import EditPropertyPage from "./pages/EditPropertyPage";
 import ComparisonPage from "./pages/ComparisonPage";
 import MapViewPage from "./pages/MapViewPage";
 import AuthPage from "./pages/AuthPage";
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/properties" element={<PropertiesPage />} />
             <Route path="/properties/:id" element={<PropertyDetailPage />} />
             <Route path="/add-property" element={<AddPropertyPage />} />
+            <Route path="/edit-property/:id" element={<EditPropertyPage />} />
             <Route path="/comparison" element={<ComparisonPage />} />
             <Route path="/map" element={<MapViewPage />} />
             <Route path="/auth" element={<AuthPage />} />

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout/Layout";
 import PropertyDetail from "@/components/Properties/PropertyDetail";
+import ShareProperty from "@/components/Properties/ShareProperty";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { usePropertyStore } from "@/store/propertyStore";
 import { useToast } from "@/components/ui/use-toast";
@@ -81,8 +82,18 @@ const PropertyDetailPage = () => {
   if (isLoading) {
     return (
       <Layout>
-        <div className="flex justify-center items-center min-h-[60vh]">
-          <div className="animate-pulse text-xl font-semibold">Loading...</div>
+        <div className="space-y-6">
+          <div className="animate-pulse flex justify-between items-center">
+            <div className="h-9 w-32 bg-muted rounded-md"></div>
+            <div className="flex gap-2">
+              <div className="h-9 w-20 bg-muted rounded-md"></div>
+              <div className="h-9 w-20 bg-muted rounded-md"></div>
+            </div>
+          </div>
+          <div className="animate-pulse space-y-4">
+            <div className="h-64 bg-muted rounded-lg"></div>
+            <div className="h-48 bg-muted rounded-lg"></div>
+          </div>
         </div>
       </Layout>
     );
@@ -116,6 +127,8 @@ const PropertyDetailPage = () => {
           </div>
           
           <div className="flex gap-2">
+            <ShareProperty property={property} />
+            
             <Button variant="outline" asChild>
               <Link to={`/edit-property/${property.id}`} className="flex items-center gap-2">
                 <Pencil className="h-4 w-4" />
