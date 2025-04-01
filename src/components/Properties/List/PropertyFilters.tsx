@@ -1,11 +1,12 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Filter } from 'lucide-react';
+import { Filter, Users, Building, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { usePropertyStore } from '@/store/propertyStore';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface PropertyFiltersProps {
   showFilters: boolean;
@@ -27,6 +28,7 @@ const PropertyFilters = ({
   propertyType
 }: PropertyFiltersProps) => {
   const { setFilters, filters } = usePropertyStore();
+  const [selectedSubtype, setSelectedSubtype] = useState<string | null>(filters.propertySubtype || null);
 
   // Function to get the price label based on property type
   const getPriceLabel = (type: string | null) => {
@@ -35,13 +37,26 @@ const PropertyFilters = ({
     return 'Price Range';
   };
 
+  // Reset propertySubtype when propertyType changes
+  useEffect(() => {
+    if (propertyType === 'buy' && selectedSubtype === 'sharehouse') {
+      setSelectedSubtype(null);
+    }
+  }, [propertyType, selectedSubtype]);
+
   // Apply filters
   const applyFilters = () => {
     setFilters({
       minPrice: priceRange[0],
       maxPrice: priceRange[1],
-      propertyType: propertyType as 'rent' | 'buy' | null
+      propertyType: propertyType as 'rent' | 'buy' | null,
+      propertySubtype: selectedSubtype as 'apartment' | 'house' | 'sharehouse' | 'condo' | 'townhouse' | null
     });
+  };
+
+  // Handle subtype selection
+  const handleSubtypeChange = (value: string) => {
+    setSelectedSubtype(value === selectedSubtype ? null : value);
   };
 
   return (
@@ -58,7 +73,7 @@ const PropertyFilters = ({
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.3 }}
-          className="overflow-hidden absolute top-full left-0 right-0 mt-2 z-20"
+          className="overflow-hidden absolute top-full left-0 right-0 mt-2 z-20 w-[calc(100vw-2rem)] md:w-[600px] lg:w-[800px]"
         >
           <div className="p-6 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-800">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -138,6 +153,55 @@ const PropertyFilters = ({
                 </Select>
               </div>
             </div>
+
+            {propertyType === 'rent' && (
+              <div className="mt-6">
+                <h3 className="font-medium text-sm mb-3">Property Subtype</h3>
+                <ToggleGroup type="single" value={selectedSubtype || ""} onValueChange={handleSubtypeChange}>
+                  <ToggleGroupItem value="apartment" aria-label="Apartment" className="flex gap-1.5 items-center">
+                    <Building size={14} />
+                    <span>Apartment</span>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="house" aria-label="House" className="flex gap-1.5 items-center">
+                    <Home size={14} />
+                    <span>House</span>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="sharehouse" aria-label="Sharehouse" className="flex gap-1.5 items-center">
+                    <Users size={14} />
+                    <span>Sharehouse</span>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="townhouse" aria-label="Townhouse" className="flex gap-1.5 items-center">
+                    <Home size={14} />
+                    <span>Townhouse</span>
+                  </ToggleGroupItem>
+                </ToggleGroup>
+                {selectedSubtype === 'sharehouse' && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Sharehouses show price per person
+                  </p>
+                )}
+              </div>
+            )}
+
+            {propertyType === 'buy' && (
+              <div className="mt-6">
+                <h3 className="font-medium text-sm mb-3">Property Subtype</h3>
+                <ToggleGroup type="single" value={selectedSubtype || ""} onValueChange={handleSubtypeChange}>
+                  <ToggleGroupItem value="house" aria-label="House" className="flex gap-1.5 items-center">
+                    <Home size={14} />
+                    <span>House</span>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="condo" aria-label="Condo" className="flex gap-1.5 items-center">
+                    <Building size={14} />
+                    <span>Condo</span>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="townhouse" aria-label="Townhouse" className="flex gap-1.5 items-center">
+                    <Home size={14} />
+                    <span>Townhouse</span>
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            )}
             
             <div className="flex justify-end mt-6">
               <Button onClick={applyFilters}>Apply Filters</Button>

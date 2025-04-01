@@ -1,4 +1,3 @@
-
 export interface Property {
   id: string;
   title: string;
@@ -20,6 +19,7 @@ export interface Property {
   favorite: boolean;
   status: 'interested' | 'viewed' | 'applied' | 'rejected' | 'accepted';
   propertyType: 'rent' | 'buy';
+  propertySubtype: 'apartment' | 'house' | 'sharehouse' | 'condo' | 'townhouse' | null;
   contactName?: string;
   contactPhone?: string;
   contactEmail?: string;
@@ -50,6 +50,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     favorite: true,
     status: "viewed",
     propertyType: "rent",
+    propertySubtype: "apartment",
     contactName: "John Smith",
     contactPhone: "415-555-1234",
     contactEmail: "john@example.com",
@@ -78,6 +79,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     favorite: false,
     status: "interested",
     propertyType: "rent",
+    propertySubtype: "house",
     contactName: "Sarah Johnson",
     contactPhone: "510-555-6789",
     contactEmail: "sarah@example.com",
@@ -106,6 +108,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     favorite: true,
     status: "applied",
     propertyType: "buy",
+    propertySubtype: "condo",
     contactName: "Michael Chen",
     contactPhone: "415-555-9876",
     contactEmail: "michael@example.com",

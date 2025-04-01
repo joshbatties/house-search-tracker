@@ -17,7 +17,8 @@ import {
   XSquare,
   DollarSign,
   Home,
-  Key
+  Key,
+  Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -45,11 +46,53 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
     rejected: <XSquare size={14} />,
   };
   
-  // Get the appropriate price label based on property type
+  // Get the appropriate price label based on property type and subtype
   const getPriceLabel = () => {
-    return property.propertyType === 'buy' 
-      ? `$${property.price.toLocaleString()}` 
-      : `$${property.price.toLocaleString()}/mo`;
+    if (property.propertyType === 'buy') {
+      return `$${property.price.toLocaleString()}`;
+    }
+    
+    if (property.propertySubtype === 'sharehouse') {
+      return `$${property.price.toLocaleString()}/mo/person`;
+    }
+    
+    return `$${property.price.toLocaleString()}/mo`;
+  };
+  
+  const getPropertyTypeIcon = () => {
+    if (property.propertyType === 'buy') {
+      return <Home size={14} />;
+    }
+    
+    if (property.propertySubtype === 'sharehouse') {
+      return <Users size={14} />;
+    }
+    
+    return <Key size={14} />;
+  };
+  
+  const getPropertyTypeLabel = () => {
+    if (property.propertyType === 'buy') {
+      return 'Buy';
+    }
+    
+    if (property.propertySubtype === 'sharehouse') {
+      return 'Sharehouse';
+    }
+    
+    return 'Rent';
+  };
+  
+  const getPropertyTypeColor = () => {
+    if (property.propertyType === 'buy') {
+      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+    }
+    
+    if (property.propertySubtype === 'sharehouse') {
+      return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
+    }
+    
+    return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
   };
   
   const handleToggleFavorite = async (e: React.MouseEvent) => {
@@ -119,17 +162,11 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
               variant="outline"
               className={cn(
                 "flex items-center gap-1",
-                property.propertyType === 'rent' 
-                  ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" 
-                  : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                getPropertyTypeColor()
               )}
             >
-              {property.propertyType === 'rent' ? (
-                <Key size={14} />
-              ) : (
-                <Home size={14} />
-              )}
-              {property.propertyType === 'rent' ? 'Rent' : 'Buy'}
+              {getPropertyTypeIcon()}
+              {getPropertyTypeLabel()}
             </Badge>
           </div>
         </Link>

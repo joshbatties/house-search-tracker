@@ -37,7 +37,16 @@ const PropertyFilterControls = ({ searchTerm, setSearchTerm }: PropertyFilterCon
   const handlePropertyTypeChange = (value: string) => {
     const newValue = value === propertyType ? null : value;
     setPropertyType(newValue);
-    setFilters({ propertyType: newValue as 'rent' | 'buy' | null });
+    
+    // Clear propertySubtype filter if property type changes
+    if (newValue !== propertyType) {
+      setFilters({ 
+        propertyType: newValue as 'rent' | 'buy' | null,
+        propertySubtype: null 
+      });
+    } else {
+      setFilters({ propertyType: newValue as 'rent' | 'buy' | null });
+    }
   };
   
   // Reset all filters and search
@@ -61,7 +70,8 @@ const PropertyFilterControls = ({ searchTerm, setSearchTerm }: PropertyFilterCon
     filters.minBathrooms !== null || 
     filters.status !== null || 
     filters.favorite !== null || 
-    filters.propertyType !== null;
+    filters.propertyType !== null ||
+    filters.propertySubtype !== null;
 
   return (
     <div className="flex flex-col md:flex-row gap-4">
