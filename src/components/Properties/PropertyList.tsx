@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { usePropertyStore } from '@/store/propertyStore';
+import { usePropertyStore } from '@/store/property/propertyStore';
 import PropertyFilterControls from './List/PropertyFilterControls';
 import PropertyResults from './List/PropertyResults';
 import PropertyListSkeleton from './List/PropertyListSkeleton';

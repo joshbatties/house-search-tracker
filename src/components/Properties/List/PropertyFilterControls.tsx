@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { usePropertyStore } from '@/store/propertyStore';
+import { usePropertyStore } from '@/store/property/propertyStore';
 import PropertyFilters from './PropertyFilters';
 import PropertySearch from './PropertySearch';
 import PropertyTypeToggle from './PropertyTypeToggle';

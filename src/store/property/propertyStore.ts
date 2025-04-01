@@ -1,47 +1,28 @@
-import { create } from 'zustand';
-import { Property } from '../types/Property';
-import { propertyService } from '@/services/property';
 
-interface PropertyState {
-  properties: Property[];
-  filteredProperties: Property[];
-  filters: {
-    minPrice: number | null;
-    maxPrice: number | null;
-    minBedrooms: number | null;
-    minBathrooms: number | null;
-    status: string | null;
-    favorite: boolean | null;
-    propertyType: 'rent' | 'buy' | null;
-    propertySubtype: 'apartment' | 'house' | 'sharehouse' | 'condo' | 'townhouse' | null;
-  };
-  isLoading: boolean;
-  error: string | null;
-  addProperty: (property: Omit<Property, 'id' | 'dateAdded'>) => Promise<Property>;
-  updateProperty: (id: string, updates: Partial<Property>) => Promise<void>;
-  deleteProperty: (id: string) => Promise<void>;
-  toggleFavorite: (id: string) => Promise<void>;
-  setFilters: (filters: Partial<PropertyState['filters']>) => void;
-  resetFilters: () => void;
-  getProperty: (id: string) => Property | undefined;
-  fetchProperties: () => Promise<void>;
-}
+import { create } from 'zustand';
+import { Property } from '@/types/Property';
+import { propertyService } from '@/services/property';
+import { PropertyState, PropertyFilters } from './types';
+import { applyFilters } from './filterUtils';
+
+// Default filters state
+const defaultFilters: PropertyFilters = {
+  minPrice: null,
+  maxPrice: null,
+  minBedrooms: null,
+  minBathrooms: null,
+  status: null,
+  favorite: null,
+  propertyType: null,
+  propertySubtype: null,
+};
 
 export const usePropertyStore = create<PropertyState>((set, get) => ({
   properties: [],
   filteredProperties: [],
   isLoading: false,
   error: null,
-  filters: {
-    minPrice: null,
-    maxPrice: null,
-    minBedrooms: null,
-    minBathrooms: null,
-    status: null,
-    favorite: null,
-    propertyType: null,
-    propertySubtype: null,
-  },
+  filters: defaultFilters,
   
   fetchProperties: async () => {
     set({ isLoading: true, error: null });
@@ -192,16 +173,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
   
   resetFilters: () => {
     set((state) => ({
-      filters: {
-        minPrice: null,
-        maxPrice: null,
-        minBedrooms: null,
-        minBathrooms: null,
-        status: null,
-        favorite: null,
-        propertyType: null,
-        propertySubtype: null,
-      },
+      filters: defaultFilters,
       filteredProperties: state.properties
     }));
   },
@@ -210,32 +182,3 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     return get().properties.find(property => property.id === id);
   }
 }));
-
-// Helper function to apply filters
-const applyFilters = (properties: Property[], filters: PropertyState['filters']) => {
-  return properties.filter(property => {
-    // Price filters
-    if (filters.minPrice !== null && property.price < filters.minPrice) return false;
-    if (filters.maxPrice !== null && property.price > filters.maxPrice) return false;
-    
-    // Bedroom filters
-    if (filters.minBedrooms !== null && property.bedrooms < filters.minBedrooms) return false;
-    
-    // Bathroom filters
-    if (filters.minBathrooms !== null && property.bathrooms < filters.minBathrooms) return false;
-    
-    // Status filter
-    if (filters.status !== null && property.status !== filters.status) return false;
-    
-    // Favorite filter
-    if (filters.favorite !== null && property.favorite !== filters.favorite) return false;
-    
-    // Property type filter
-    if (filters.propertyType !== null && property.propertyType !== filters.propertyType) return false;
-    
-    // Property subtype filter
-    if (filters.propertySubtype !== null && property.propertySubtype !== filters.propertySubtype) return false;
-    
-    return true;
-  });
-};

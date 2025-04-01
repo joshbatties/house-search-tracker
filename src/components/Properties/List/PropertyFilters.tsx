@@ -5,7 +5,7 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Filter, Users, Building, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { usePropertyStore } from '@/store/propertyStore';
+import { usePropertyStore } from '@/store/property/propertyStore';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface PropertyFiltersProps {
