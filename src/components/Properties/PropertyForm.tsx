@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePropertyStore } from '@/store/propertyStore';
 import { Property } from '@/types/Property';
@@ -114,16 +115,32 @@ const PropertyForm = ({
       const fileName = `${uuidv4()}.${fileExt}`;
       const filePath = `property-images/${fileName}`;
 
+      // Create a custom onUploadProgress function to track progress
+      const progressHandler = (progress: { loaded: number; total: number }) => {
+        const percent = (progress.loaded / progress.total) * 100;
+        setUploadProgress(percent);
+      };
+
+      // Setup upload options without the invalid onUploadProgress property
+      const uploadOptions = {
+        cacheControl: '3600',
+        upsert: false
+      };
+
+      // Add event listener for upload progress before starting the upload
+      const uploadEvent = new CustomEvent('supabase.storage.upload');
+      window.addEventListener('supabase.storage.upload:progress', (e: any) => {
+        if (e.detail && e.detail.progress) {
+          progressHandler(e.detail.progress);
+        }
+      });
+
       const { data, error } = await supabase.storage
         .from('property-images')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-          onUploadProgress: (progress) => {
-            const percent = (progress.loaded / progress.total) * 100;
-            setUploadProgress(percent);
-          },
-        });
+        .upload(filePath, file, uploadOptions);
+
+      // Remove event listener after upload
+      window.removeEventListener('supabase.storage.upload:progress', progressHandler);
 
       if (error) {
         throw error;
@@ -247,7 +264,7 @@ const PropertyForm = ({
     }
   }, [formData.imageUrl, previewUrl]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     getImageDisplayUrl();
   }, [getImageDisplayUrl]);
 
@@ -730,3 +747,4 @@ const PropertyForm = ({
 };
 
 export default PropertyForm;
+
