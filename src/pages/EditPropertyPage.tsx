@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -7,6 +6,7 @@ import PropertyForm from "@/components/Properties/PropertyForm";
 import { usePropertyStore } from "@/store/propertyStore";
 import { Property } from "@/types/Property";
 import { propertyService } from "@/services/property";
+import { supabase } from "@/integrations/supabase/client";
 
 const EditPropertyPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,6 +26,14 @@ const EditPropertyPage = () => {
       try {
         const data = await propertyService.getProperty(id);
         if (data) {
+          if (data.imageUrl && data.imageUrl.startsWith('property-images/')) {
+            const { data: urlData } = supabase.storage
+              .from('property-images')
+              .getPublicUrl(data.imageUrl);
+              
+            console.log("Image URL from storage:", urlData.publicUrl);
+          }
+          
           setProperty(data);
         } else {
           setError("Property not found");

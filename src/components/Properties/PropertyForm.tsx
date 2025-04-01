@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePropertyStore } from '@/store/propertyStore';
 import { Property } from '@/types/Property';
@@ -10,7 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { PlusCircle, MinusCircle } from "lucide-react";
+import { PlusCircle, MinusCircle, Upload, X, Image as ImageIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useDropzone } from 'react-dropzone';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface PropertyFormProps {
   editProperty?: Property;
@@ -56,6 +59,11 @@ const PropertyForm = ({
   const [amenityInput, setAmenityInput] = useState('');
   const [positiveFeatureInput, setPositiveFeatureInput] = useState('');
   const [negativeFeatureInput, setNegativeFeatureInput] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    editProperty?.imageUrl ? editProperty.imageUrl : null
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -77,6 +85,78 @@ const PropertyForm = ({
     setFormData({
       ...formData,
       status: value as Property['status'],
+    });
+  };
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    if (acceptedFiles.length === 0) return;
+
+    const file = acceptedFiles[0];
+    
+    if (!file.type.startsWith('image/')) {
+      toast.error('Only images are accepted');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size should be less than 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewUrl(objectUrl);
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = `property-images/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('property-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+          onUploadProgress: (progress) => {
+            const percent = (progress.loaded / progress.total) * 100;
+            setUploadProgress(percent);
+          },
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      setFormData({
+        ...formData,
+        imageUrl: filePath,
+      });
+
+      toast.success('Image uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image. Please try again.');
+      setPreviewUrl(null);
+    } finally {
+      setIsUploading(false);
+    }
+  }, [formData]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
+    onDrop,
+    accept: {
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp', '.gif']
+    },
+    maxFiles: 1
+  });
+
+  const removeImage = () => {
+    setPreviewUrl(null);
+    setFormData({
+      ...formData,
+      imageUrl: '',
     });
   };
 
@@ -155,6 +235,21 @@ const PropertyForm = ({
       console.error(error);
     }
   };
+
+  const getImageDisplayUrl = useCallback(async () => {
+    if (!previewUrl && formData.imageUrl) {
+      if (formData.imageUrl.startsWith('property-images/')) {
+        const { data } = supabase.storage.from('property-images').getPublicUrl(formData.imageUrl);
+        setPreviewUrl(data.publicUrl);
+      } else {
+        setPreviewUrl(formData.imageUrl);
+      }
+    }
+  }, [formData.imageUrl, previewUrl]);
+
+  React.useEffect(() => {
+    getImageDisplayUrl();
+  }, [getImageDisplayUrl]);
 
   return (
     <Card className="max-w-4xl mx-auto shadow-card">
@@ -359,31 +454,95 @@ const PropertyForm = ({
           <Separator />
           
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Links & Media</h3>
+            <h3 className="text-lg font-medium">Images & Links</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="listingUrl">Listing URL</Label>
-                <Input
-                  id="listingUrl"
-                  name="listingUrl"
-                  type="url"
-                  value={formData.listingUrl}
-                  onChange={handleChange}
-                  placeholder="https://..."
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <Label>Property Image</Label>
+                
+                {previewUrl ? (
+                  <div className="relative w-full h-48 rounded-md overflow-hidden border border-border">
+                    <img 
+                      src={previewUrl} 
+                      alt="Property preview" 
+                      className="w-full h-full object-cover"
+                    />
+                    <button 
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 bg-black/70 text-white p-1 rounded-full hover:bg-black/90 transition-colors"
+                      aria-label="Remove image"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <div 
+                    {...getRootProps()} 
+                    className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-colors ${
+                      isDragActive 
+                        ? 'border-primary bg-primary/5' 
+                        : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                    }`}
+                  >
+                    <input {...getInputProps()} />
+                    <div className="flex flex-col items-center gap-2">
+                      <Upload className="h-10 w-10 text-muted-foreground" />
+                      {isDragActive ? (
+                        <p>Drop the image here...</p>
+                      ) : (
+                        <>
+                          <p className="text-sm font-medium">Drag & drop an image here</p>
+                          <p className="text-xs text-muted-foreground">or click to select a file</p>
+                          <p className="text-xs text-muted-foreground">Max size: 5MB</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {isUploading && (
+                  <div className="w-full bg-muted rounded-full h-2.5">
+                    <div 
+                      className="bg-primary h-2.5 rounded-full transition-all duration-300" 
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                )}
+                
+                <p className="text-xs text-muted-foreground">
+                  Upload an image of the property or paste a URL below
+                </p>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="imageUrl">Image URL</Label>
-                <Input
-                  id="imageUrl"
-                  name="imageUrl"
-                  type="url"
-                  value={formData.imageUrl}
-                  onChange={handleChange}
-                  placeholder="https://..."
-                />
+                <div className="space-y-2 mb-4">
+                  <Label htmlFor="imageUrl">Image URL (optional)</Label>
+                  <Input
+                    id="imageUrl"
+                    name="imageUrl"
+                    type="url"
+                    value={formData.imageUrl && !formData.imageUrl.startsWith('property-images/') ? formData.imageUrl : ''}
+                    onChange={handleChange}
+                    placeholder="https://..."
+                    disabled={!!previewUrl && formData.imageUrl?.startsWith('property-images/')}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    You can paste an image URL or use the drag & drop uploader
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="listingUrl">Listing URL</Label>
+                  <Input
+                    id="listingUrl"
+                    name="listingUrl"
+                    type="url"
+                    value={formData.listingUrl}
+                    onChange={handleChange}
+                    placeholder="https://..."
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -554,12 +713,11 @@ const PropertyForm = ({
           </Button>
           <Button 
             type="submit" 
-            disabled={isSubmitting || isDisabled}
+            disabled={isSubmitting || isDisabled || isUploading}
           >
             {isSubmitting ? (
               <>
                 <span className="mr-2">Saving...</span>
-                {/* You could add a spinner here if desired */}
               </>
             ) : (
               editProperty ? 'Update Property' : 'Add Property'

@@ -1,4 +1,3 @@
-
 import Layout from "@/components/Layout/Layout";
 import PropertyForm from "@/components/Properties/PropertyForm";
 import { usePropertyStore } from "@/store/propertyStore";
@@ -6,14 +5,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Property } from "@/types/Property";
 import { useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 const AddPropertyPage = () => {
   const { addProperty } = usePropertyStore();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { session, anonymousId, incrementPropertyCount, isAnonymousLimitReached, propertyCount } = useAuth();
@@ -21,10 +19,8 @@ const AddPropertyPage = () => {
   const handleSubmit = async (data: Omit<Property, "id" | "createdAt" | "updatedAt" | "dateAdded">) => {
     try {
       if (isAnonymousLimitReached) {
-        toast({
-          title: "Property Limit Reached",
-          description: "You've reached the limit of 10 properties. Please create an account to add more.",
-          variant: "destructive",
+        toast.error("Property Limit Reached", {
+          description: "You've reached the limit of 10 properties. Please create an account to add more."
         });
         navigate("/auth");
         return;
@@ -38,19 +34,14 @@ const AddPropertyPage = () => {
         incrementPropertyCount();
       }
       
-      toast({
-        title: "Property Added",
-        description: "Your property has been successfully added.",
+      toast.success("Property Added", {
+        description: "Your property has been successfully added."
       });
       
       navigate(`/properties/${newProperty.id}`);
     } catch (error) {
       console.error("Error adding property:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add property. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to add property. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
