@@ -1,3 +1,4 @@
+
 import { Property } from '@/types/Property';
 import PropertyCard from '../PropertyCard';
 import PropertyListEmpty from './PropertyListEmpty';

@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePropertyStore } from '@/store/propertyStore';
@@ -115,32 +114,24 @@ const PropertyForm = ({
       const fileName = `${uuidv4()}.${fileExt}`;
       const filePath = `property-images/${fileName}`;
 
-      // Create a custom onUploadProgress function to track progress
-      const progressHandler = (progress: { loaded: number; total: number }) => {
-        const percent = (progress.loaded / progress.total) * 100;
-        setUploadProgress(percent);
-      };
-
-      // Setup upload options without the invalid onUploadProgress property
-      const uploadOptions = {
-        cacheControl: '3600',
-        upsert: false
-      };
-
-      // Add event listener for upload progress before starting the upload
-      const uploadEvent = new CustomEvent('supabase.storage.upload');
-      window.addEventListener('supabase.storage.upload:progress', (e: any) => {
-        if (e.detail && e.detail.progress) {
-          progressHandler(e.detail.progress);
-        }
-      });
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return prev;
+          }
+          return prev + 10;
+        });
+      }, 300);
 
       const { data, error } = await supabase.storage
         .from('property-images')
-        .upload(filePath, file, uploadOptions);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      // Remove event listener after upload
-      window.removeEventListener('supabase.storage.upload:progress', progressHandler);
+      clearInterval(progressInterval);
 
       if (error) {
         throw error;
@@ -151,6 +142,7 @@ const PropertyForm = ({
         imageUrl: filePath,
       });
 
+      setUploadProgress(100);
       toast.success('Image uploaded successfully');
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -747,4 +739,3 @@ const PropertyForm = ({
 };
 
 export default PropertyForm;
-
