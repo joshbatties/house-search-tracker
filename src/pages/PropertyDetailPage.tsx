@@ -1,10 +1,9 @@
-
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout/Layout";
 import PropertyDetail from "@/components/Properties/PropertyDetail";
 import ShareProperty from "@/components/Properties/ShareProperty";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { usePropertyStore } from "@/store/propertyStore";
+import { usePropertyStore } from "@/store/property/propertyStore";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
