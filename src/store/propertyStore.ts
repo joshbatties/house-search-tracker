@@ -13,6 +13,7 @@ interface PropertyState {
     status: string | null;
     favorite: boolean | null;
     propertyType: 'rent' | 'buy' | null;
+    propertySubtype: 'apartment' | 'house' | 'sharehouse' | 'condo' | 'townhouse' | null;
   };
   isLoading: boolean;
   error: string | null;
@@ -39,6 +40,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     status: null,
     favorite: null,
     propertyType: null,
+    propertySubtype: null,
   },
   
   fetchProperties: async () => {
@@ -198,6 +200,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         status: null,
         favorite: null,
         propertyType: null,
+        propertySubtype: null,
       },
       filteredProperties: state.properties
     }));
@@ -229,6 +232,9 @@ const applyFilters = (properties: Property[], filters: PropertyState['filters'])
     
     // Property type filter
     if (filters.propertyType !== null && property.propertyType !== filters.propertyType) return false;
+    
+    // Property subtype filter
+    if (filters.propertySubtype !== null && property.propertySubtype !== filters.propertySubtype) return false;
     
     return true;
   });
